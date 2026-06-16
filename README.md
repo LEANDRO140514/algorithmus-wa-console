@@ -6,9 +6,28 @@ cumplimiento de la ventana de 24h de Meta. Cada workspace es un cliente.
 
 ## Instalar (one-click con tu agente)
 
-Arrastra **[`INSTALAR.md`](INSTALAR.md)** al chat de Claude Code y escribe
-**"instálalo"**. El agente configura tu Supabase, despliega a tu Vercel, crea tu
-super admin y deja el cron corriendo en ~15 minutos.
+Clona el repo, ábrelo en Claude Code y deja que el agente lo instale:
+
+```bash
+git clone https://github.com/Carlos-Dominguez-faber/whatsapp-saas.git
+cd whatsapp-saas
+claude "lee INSTALAR.md e instálalo"
+```
+
+(O arrastra **[`INSTALAR.md`](INSTALAR.md)** al chat de Claude Code y escribe
+**"instálalo"**.)
+
+El agente configura tu Supabase, despliega a tu Vercel, crea tu super admin y deja
+el cron corriendo en ~15 minutos. Solo te pedirá tus keys y los logins de
+Supabase/Vercel.
+
+> Los comandos del instalador (`npm`, `supabase`, `vercel`, los scripts de
+> `scripts/`) ya vienen **pre-aprobados** en
+> [`.claude/settings.json`](.claude/settings.json), así que la instalación fluye sin
+> clics de permiso. Los únicos pasos que pueden pedirte confirmación son los que
+> cargan tus secrets (keys / contraseñas) — apruébalos con confianza.
+
+> Sin git: usa **"Use this template"** en GitHub, o descarga el ZIP del repo.
 
 ## Qué incluye
 
