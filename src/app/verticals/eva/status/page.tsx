@@ -1,6 +1,6 @@
 /**
- * CONSOLE-5 — Eva WA status demo route (mock read-only).
- * Not linked in global navigation. No auth/middleware changes.
+ * CONSOLE-5 / CONSOLE-6 — Eva WA status demo route (mock read-only).
+ * Not linked in global navigation. No auth/middleware changes in CONSOLE-6.
  */
 
 import { EvaStatusPanel } from "@/components/verticals/eva";
@@ -23,6 +23,18 @@ export default function EvaStatusMockPage() {
           production services.
         </p>
       </header>
+
+      <aside
+        className="space-y-1 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-muted-foreground"
+        aria-label="Demo preview safety notice"
+      >
+        <p className="font-medium text-foreground">Demo preview</p>
+        <p>Mock read-only data</p>
+        <p>No production services are called</p>
+        <p>No live controls are available</p>
+        <p>This route is not wired to tenant/auth yet</p>
+      </aside>
+
       <EvaStatusPanel />
     </main>
   );
