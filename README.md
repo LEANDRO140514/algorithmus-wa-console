@@ -1,96 +1,73 @@
-# Agente WhatsApp — Inbox Conversacional con IA
+# Algorithmus WA Console
 
-Plataforma **multi-tenant** de inbox de WhatsApp con un agente de IA operable por
-humano: inbox tipo WhatsApp Web, CRM, motor de agente con handoff, agendamiento y
-cumplimiento de la ventana de 24h de Meta. Cada workspace es un cliente.
+SaaS control plane for WhatsApp vertical agents.
 
-## Instalar (one-click con tu agente)
+**Forked from** [Carlos-Dominguez-faber/whatsapp-saas](https://github.com/Carlos-Dominguez-faber/whatsapp-saas).
 
-Clona el repo, ábrelo en Claude Code y deja que el agente lo instale:
+## Purpose
 
-```bash
-git clone https://github.com/Carlos-Dominguez-faber/whatsapp-saas.git
-cd whatsapp-saas
-claude "lee INSTALAR.md e instálalo"
-```
+This repository is the **Algorithmus WA Console**: inbox, tenants/workspaces, agency/super-admin, dashboard, and supervision layer for WhatsApp vertical agents.
 
-(O arrastra **[`INSTALAR.md`](INSTALAR.md)** al chat de Claude Code y escribe
-**"instálalo"**.)
+It is **not** the primary brain for outbound decisions, CAG response injection, or GHL sync for Eva WA.
 
-El agente configura tu Supabase, despliega a tu Vercel, crea tu super admin y deja
-el cron corriendo en ~15 minutos. Solo te pedirá tus keys y los logins de
-Supabase/Vercel.
+## First vertical
 
-> Los comandos del instalador (`npm`, `supabase`, `vercel`, los scripts de
-> `scripts/`) ya vienen **pre-aprobados** en
-> [`.claude/settings.json`](.claude/settings.json), así que la instalación fluye sin
-> clics de permiso. Los únicos pasos que pueden pedirte confirmación son los que
-> cargan tus secrets (keys / contraseñas) — apruébalos con confianza.
+**[wa-agent-unilatino](https://github.com/LEANDRO140514/wa-agent-unilatino)** — Eva WA / Universidad Latino.
 
-> Sin git: usa **"Use this template"** en GitHub, o descarga el ZIP del repo.
+The vertical decides, responds, and synchronizes. The console observes, operates, and supervises.
 
-## Qué incluye
+## Guiding principle
 
-- **Inbox** tipo WhatsApp Web con buffer inteligente (agrupa mensajes y responde
-  como un solo turno coherente).
-- **Motor de agente** con state machine + handoff humano, prompting personalizable
-  y tools activables (incluye modo setter y agendamiento).
-- **CRM** con sincronización opcional a HighLevel (por workspace).
-- **Knowledge Base** con búsqueda semántica (pgvector).
-- **Templates** y manejo de la ventana de 24h de Meta.
-- **Multi-tenant** con roles, RLS por workspace y super admin.
+> The console observes, operates, and supervises.  
+> The vertical decides, responds, and synchronizes.
 
-## Stack
+## Status
 
-| Capa      | Tecnología                                   |
-| --------- | -------------------------------------------- |
-| Framework | Next.js 16 + React 19 + TypeScript           |
-| Estilos   | Tailwind CSS + shadcn/ui                     |
-| Backend   | Supabase (Auth + PostgreSQL + RLS + Storage) |
-| IA        | OpenRouter (LLM gateway)                     |
-| WhatsApp  | YCloud                                       |
-| Hosting   | Vercel                                       |
+This repository is in **adoption/hardening phase**.
 
-## Desarrollo local
+**Do not use as production brain for Eva WA.**
 
-```bash
-npm install
-cp .env.local.example .env.local   # llena tus keys (o usa: node scripts/setup.mjs env)
-npm run dev                        # http://localhost:3000
-```
+Inherited runtime (decision-engine, native agents, OpenRouter/RAG) remains in the codebase from the fork but must not drive Eva WA in the first integration.
 
-Otros comandos: `npm run build`, `npm run lint`, `npm run typecheck`.
+## Supabase / InsForge
 
-## El cron del buffer
+- **Supabase** is inherited/transitional (auth, inbox, legacy schema).
+- **InsForge** is the strategic destination for new critical capabilities (vertical status, CAG flags, health, replay, approvals).
 
-El inbox agrupa los mensajes entrantes en _batches_ que un worker debe drenar
-~cada minuto. Como Vercel Cron solo corre por-minuto en el plan Pro, esta
-distribución agenda el flush dentro de Postgres con **pg_cron + pg_net**, que
-llaman a `/api/cron/buffer-flush` (autenticado con `CRON_SECRET`). Lo configura el
-instalador — ver [`supabase/cron/schedule-buffer-flush.sql`](supabase/cron/schedule-buffer-flush.sql).
+Do not expand Supabase dependency for new critical metadata. Design new capabilities InsForge-first or via the vertical API contract.
 
-## Estructura
+## Safety rules
 
-```
-src/
-├── app/        # Next.js App Router ((auth), (main), api/)
-├── features/   # Feature-First (inbox, settings, crm, tools, kb, …)
-└── shared/     # Reutilizable (components, lib, types)
-supabase/
-├── migrations/ # Schema (RLS, super admin, pg_cron, …)
-└── cron/       # SQL post-deploy del buffer-flush
-scripts/
-├── setup.mjs       # Orquestador de instalación (secrets, env, db, cron)
-└── seed-admin.mjs  # Super admin + workspace demo
-```
+- **No double webhook** — Eva WA YCloud webhook stays in `wa-agent-unilatino`.
+- **No live control** without explicit authorization.
+- **No native decision-engine for Eva WA.**
+- **No CAG response activation from console yet.**
+- **No RAG/LLM activation for Eva WA from console.**
 
-## Variables de entorno
+See also [docs/console-env-safety.md](docs/console-env-safety.md).
 
-Ver [`.env.local.example`](.env.local.example). Las de Supabase y OpenRouter las
-pegas tú; `ENCRYPTION_KEY`, `BUFFER_PROCESS_SECRET` y `CRON_SECRET` las **genera**
-`scripts/setup.mjs`. **YCloud y HighLevel NO son env vars** — se configuran por
-workspace en Settings → Integraciones (encriptados por tenant).
+## Console adoption docs
 
----
+| Phase | Document |
+| ----- | -------- |
+| CONSOLE-0 | [docs/console-0-whatsapp-saas-audit.md](docs/console-0-whatsapp-saas-audit.md) |
+| CONSOLE-1 | [docs/console-1-algorithmus-wa-console-adoption-plan.md](docs/console-1-algorithmus-wa-console-adoption-plan.md) |
+| CONSOLE-2 | [docs/console-2-fork-rename-baseline.md](docs/console-2-fork-rename-baseline.md) |
+| CONSOLE-3 | [docs/console-3-repository-baseline-hardening.md](docs/console-3-repository-baseline-hardening.md) |
 
-_Material para miembros de Imperio Agentico._
+## Inherited stack (from fork)
+
+| Layer | Technology |
+| ----- | ---------- |
+| Framework | Next.js 16 + React 19 + TypeScript |
+| UI | Tailwind CSS + shadcn/ui |
+| Backend (legacy) | Supabase (Auth + PostgreSQL + RLS + Storage) |
+| IA (legacy) | OpenRouter |
+| WhatsApp | YCloud |
+| Hosting | Vercel |
+
+Local development instructions remain in the forked codebase; do not run installs, migrations, or production deploys as part of the adoption phases unless explicitly authorized.
+
+## Environment template
+
+See [`.env.local.example`](.env.local.example). Do not commit real `.env` files or production secrets — [docs/console-env-safety.md](docs/console-env-safety.md).
