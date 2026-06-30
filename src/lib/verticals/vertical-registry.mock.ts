@@ -27,6 +27,31 @@ const EVA_REGISTRY_ENTRY: VerticalRegistryEntry = {
   connectionMode: "mock_connector",
   consoleStatus: "mock_readonly",
   statusPanelPath: "/verticals/eva/status",
+  routeMetadata: {
+    previewStatusPanelPath: "/verticals/eva/status",
+    workspaceStatusPanelPath:
+      "/workspaces/[workspaceId]/verticals/[verticalId]/status",
+    agencyStatusPanelPath:
+      "/agency/verticals/[tenantId]/[verticalId]/status",
+    routeMode: "preview",
+    visibility: "preview",
+    allowedRoles: [
+      "owner",
+      "admin",
+      "agency_admin",
+      "workspace_admin",
+      "viewer",
+    ],
+    routeParams: {
+      workspaceId: "[workspaceId]",
+      tenantId: "[tenantId]",
+      verticalId: "eva",
+    },
+    routeSurface: ["status_panel", "registry_list"],
+    tenantAware: true,
+    workspaceAware: true,
+    agencyAware: true,
+  },
   tags: ["eva", "universidad-latino", "whatsapp", "ycloud", "ghl", "cag"],
   capabilities: [
     { key: "status_panel", enabled: true, mode: "mock" },
@@ -55,7 +80,7 @@ const EVA_REGISTRY_ENTRY: VerticalRegistryEntry = {
 };
 
 export const VERTICAL_REGISTRY_MOCK: VerticalRegistry = {
-  version: "mock-console-7",
+  version: "mock-console-10",
   entries: [EVA_REGISTRY_ENTRY],
   updatedAt: MOCK_TIMESTAMP,
 };

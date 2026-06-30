@@ -93,6 +93,15 @@ function VerticalCard({ entry }: { entry: VerticalRegistryEntry }) {
           )}
         </div>
 
+        <p className="text-sm text-muted-foreground">
+          Preview route:{" "}
+          <code className="font-mono text-xs">
+            {entry.routeMetadata.previewStatusPanelPath ?? entry.statusPanelPath}
+          </code>
+          {" · "}
+          Route mode: {entry.routeMetadata.routeMode}
+        </p>
+
         <p className="text-sm">
           <span className="text-muted-foreground">statusPanelPath: </span>
           <code className="font-mono text-xs">{entry.statusPanelPath}</code>

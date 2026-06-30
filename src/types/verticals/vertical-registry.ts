@@ -42,6 +42,50 @@ export type VerticalConsoleStatus =
 
 export type VerticalSafetyLevel = "safe" | "warning" | "blocked" | "unknown";
 
+export type VerticalRouteMode = "preview" | "workspace" | "agency" | "hybrid";
+
+export type VerticalRouteVisibility =
+  | "hidden"
+  | "preview"
+  | "workspace"
+  | "agency"
+  | "internal";
+
+export type VerticalRouteSurface =
+  | "status_panel"
+  | "registry_list"
+  | "dashboard"
+  | "operations"
+  | "settings";
+
+export type VerticalRouteRole =
+  | "owner"
+  | "admin"
+  | "agency_admin"
+  | "workspace_admin"
+  | "operator"
+  | "viewer";
+
+export interface VerticalRouteParams {
+  workspaceId?: string;
+  tenantId?: string;
+  verticalId?: string;
+}
+
+export interface VerticalRouteMetadata {
+  previewStatusPanelPath?: string;
+  workspaceStatusPanelPath?: string;
+  agencyStatusPanelPath?: string;
+  routeMode: VerticalRouteMode;
+  visibility: VerticalRouteVisibility;
+  allowedRoles: VerticalRouteRole[];
+  routeParams: VerticalRouteParams;
+  routeSurface: VerticalRouteSurface[];
+  tenantAware: boolean;
+  workspaceAware: boolean;
+  agencyAware: boolean;
+}
+
 export type VerticalCapabilityKey =
   | "status_panel"
   | "health"
@@ -85,6 +129,7 @@ export interface VerticalRegistryEntry {
   connectionMode: VerticalConnectionMode;
   consoleStatus: VerticalConsoleStatus;
   statusPanelPath: string;
+  routeMetadata: VerticalRouteMetadata;
   capabilities: VerticalCapability[];
   safety: VerticalSafetyProfile;
   tags: string[];

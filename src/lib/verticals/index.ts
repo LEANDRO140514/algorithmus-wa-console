@@ -18,5 +18,11 @@ export type {
   VerticalDataMode,
   VerticalRegistry,
   VerticalRegistryEntry,
+  VerticalRouteMetadata,
+  VerticalRouteMode,
+  VerticalRouteParams,
+  VerticalRouteRole,
+  VerticalRouteSurface,
+  VerticalRouteVisibility,
   VerticalSafetyProfile,
 } from "@/types/verticals/vertical-registry";
