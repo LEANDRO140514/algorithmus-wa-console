@@ -10,6 +10,18 @@ export {
   listVerticalRegistryEntries,
 } from "./vertical-registry.mock";
 
+export {
+  DEFAULT_VERTICAL_ROUTE_PREVIEW_PARAMS,
+  buildVerticalRoutePreview,
+  mergeVerticalRoutePreviewParams,
+  resolveVerticalRoutePath,
+} from "./vertical-route-preview";
+
+export type {
+  VerticalRoutePreviewInput,
+  VerticalRoutePreviewResult,
+} from "./vertical-route-preview";
+
 export type {
   VerticalCapability,
   VerticalCapabilityKey,

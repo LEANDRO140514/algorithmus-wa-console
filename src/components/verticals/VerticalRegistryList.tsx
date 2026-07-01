@@ -1,5 +1,5 @@
 /**
- * Vertical registry list — CONSOLE-8/11 mock/read-only UI.
+ * Vertical registry list — CONSOLE-8/11/12 mock/read-only UI.
  * Server component: listVerticalRegistryEntries (no network).
  */
 
@@ -11,7 +11,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { listVerticalRegistryEntries } from "@/lib/verticals";
+import {
+  buildVerticalRoutePreview,
+  listVerticalRegistryEntries,
+} from "@/lib/verticals";
 import type {
   VerticalRegistryEntry,
   VerticalRouteMetadata,
@@ -43,50 +46,51 @@ function BoolYesNoRow({ label, value }: { label: string; value: boolean }) {
   return <FieldRow label={label} value={value ? "yes" : "no"} />;
 }
 
-function RouteMetadataPreview({
-  routeMetadata,
-}: {
-  routeMetadata: VerticalRouteMetadata;
-}) {
+function RouteMetadataPreview({ entry }: { entry: VerticalRegistryEntry }) {
+  const routePreview = buildVerticalRoutePreview({ entry });
+  const routeMetadata: VerticalRouteMetadata = entry.routeMetadata;
+  const { allowedRoles, routeSurface } = routeMetadata;
+
   return (
     <div className="space-y-2 rounded-md border border-border/60 bg-muted/20 p-3">
       <p className="text-sm font-medium text-muted-foreground">
         Route metadata (read-only)
       </p>
       <dl className="space-y-1">
-        <FieldRow label="routeMode" value={routeMetadata.routeMode} />
-        <FieldRow label="visibility" value={routeMetadata.visibility} />
+        <FieldRow label="routeMode" value={routePreview.routeMode} />
+        <FieldRow label="visibility" value={routePreview.visibility} />
         <PathTextRow
           label="preview route"
-          path={
-            routeMetadata.previewStatusPanelPath ?? undefined
-          }
+          path={routePreview.previewStatusPanelPath}
         />
         <PathTextRow
-          label="workspace route (future)"
-          path={routeMetadata.workspaceStatusPanelPath}
+          label="workspace route (future) — template"
+          path={routePreview.workspaceStatusPanelPath}
         />
         <PathTextRow
-          label="agency route (future)"
-          path={routeMetadata.agencyStatusPanelPath}
+          label="workspace route preview"
+          path={routePreview.resolvedWorkspaceStatusPanelPath}
         />
-        <BoolYesNoRow label="tenant-aware" value={routeMetadata.tenantAware} />
+        <PathTextRow
+          label="agency route (future) — template"
+          path={routePreview.agencyStatusPanelPath}
+        />
+        <PathTextRow
+          label="agency route preview"
+          path={routePreview.resolvedAgencyStatusPanelPath}
+        />
+        <BoolYesNoRow label="tenant-aware" value={routePreview.tenantAware} />
         <BoolYesNoRow
           label="workspace-aware"
-          value={routeMetadata.workspaceAware}
+          value={routePreview.workspaceAware}
         />
-        <BoolYesNoRow label="agency-aware" value={routeMetadata.agencyAware} />
-        <FieldRow
-          label="allowedRoles"
-          value={routeMetadata.allowedRoles.join(", ")}
-        />
-        <FieldRow
-          label="routeSurface"
-          value={routeMetadata.routeSurface.join(", ")}
-        />
+        <BoolYesNoRow label="agency-aware" value={routePreview.agencyAware} />
+        <FieldRow label="allowedRoles" value={allowedRoles.join(", ")} />
+        <FieldRow label="routeSurface" value={routeSurface.join(", ")} />
+        <FieldRow label="isPreviewOnly" value="true" />
       </dl>
       <p className="text-xs text-muted-foreground">
-        Future workspace/agency paths are declarative only — not navigable.
+        Preview-only route resolution. Future paths are declarative only — not navigable.
       </p>
     </div>
   );
@@ -160,7 +164,7 @@ function VerticalCard({ entry }: { entry: VerticalRegistryEntry }) {
           )}
         </div>
 
-        <RouteMetadataPreview routeMetadata={entry.routeMetadata} />
+        <RouteMetadataPreview entry={entry} />
 
         <p className="text-sm">
           <span className="text-muted-foreground">statusPanelPath: </span>
@@ -205,7 +209,7 @@ export function VerticalRegistryList() {
         <CardHeader>
           <CardTitle>Vertical Registry</CardTitle>
           <CardDescription>
-            Mock read-only registry — route metadata preview (CONSOLE-11)
+            Mock read-only registry — route preview contract (CONSOLE-12)
           </CardDescription>
         </CardHeader>
         <CardContent>
