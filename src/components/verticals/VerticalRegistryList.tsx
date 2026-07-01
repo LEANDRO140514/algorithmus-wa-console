@@ -1,5 +1,5 @@
 /**
- * Vertical registry list — CONSOLE-8/11/12 mock/read-only UI.
+ * Vertical registry list — CONSOLE-8/11/12/13 mock/read-only UI.
  * Server component: listVerticalRegistryEntries (no network).
  */
 
@@ -15,6 +15,8 @@ import {
   buildVerticalRoutePreview,
   listVerticalRegistryEntries,
 } from "@/lib/verticals";
+import { getMockWorkspaceContext } from "@/lib/workspaces";
+import type { WorkspaceContext } from "@/types/workspaces/workspace-context";
 import type {
   VerticalRegistryEntry,
   VerticalRouteMetadata,
@@ -46,8 +48,42 @@ function BoolYesNoRow({ label, value }: { label: string; value: boolean }) {
   return <FieldRow label={label} value={value ? "yes" : "no"} />;
 }
 
-function RouteMetadataPreview({ entry }: { entry: VerticalRegistryEntry }) {
-  const routePreview = buildVerticalRoutePreview({ entry });
+function WorkspaceContextPreview({
+  workspaceContext,
+}: {
+  workspaceContext: WorkspaceContext;
+}) {
+  return (
+    <div className="rounded-md border border-border/60 bg-muted/10 p-3 text-sm">
+      <p className="font-medium text-muted-foreground">Context preview</p>
+      <dl className="mt-2 space-y-1">
+        <FieldRow
+          label="Tenant"
+          value={`${workspaceContext.tenant.tenantName} (${workspaceContext.tenant.tenantId})`}
+        />
+        <FieldRow
+          label="Workspace"
+          value={`${workspaceContext.workspace.workspaceName} (${workspaceContext.workspace.workspaceId})`}
+        />
+        <FieldRow label="Mode" value={workspaceContext.mode} />
+        <FieldRow label="Read-only" value="yes" />
+        <FieldRow label="Mock" value="yes" />
+      </dl>
+    </div>
+  );
+}
+
+function RouteMetadataPreview({
+  entry,
+  workspaceContext,
+}: {
+  entry: VerticalRegistryEntry;
+  workspaceContext: WorkspaceContext;
+}) {
+  const routePreview = buildVerticalRoutePreview({
+    entry,
+    params: workspaceContext.routeParams,
+  });
   const routeMetadata: VerticalRouteMetadata = entry.routeMetadata;
   const { allowedRoles, routeSurface } = routeMetadata;
 
@@ -96,7 +132,13 @@ function RouteMetadataPreview({ entry }: { entry: VerticalRegistryEntry }) {
   );
 }
 
-function VerticalCard({ entry }: { entry: VerticalRegistryEntry }) {
+function VerticalCard({
+  entry,
+  workspaceContext,
+}: {
+  entry: VerticalRegistryEntry;
+  workspaceContext: WorkspaceContext;
+}) {
   const liveControlsBlocked = entry.capabilities.some(
     (c) => c.key === "live_controls" && !c.enabled,
   );
@@ -164,7 +206,10 @@ function VerticalCard({ entry }: { entry: VerticalRegistryEntry }) {
           )}
         </div>
 
-        <RouteMetadataPreview entry={entry} />
+        <RouteMetadataPreview
+          entry={entry}
+          workspaceContext={workspaceContext}
+        />
 
         <p className="text-sm">
           <span className="text-muted-foreground">statusPanelPath: </span>
@@ -184,6 +229,7 @@ function VerticalCard({ entry }: { entry: VerticalRegistryEntry }) {
 
 export function VerticalRegistryList() {
   const entries = listVerticalRegistryEntries();
+  const workspaceContext = getMockWorkspaceContext();
 
   const mockCount = entries.filter((e) => e.dataMode === "mock").length;
   const readOnlyCount = entries.filter((e) => e.safety.readOnly).length;
@@ -205,11 +251,13 @@ export function VerticalRegistryList() {
         No production services are called
       </p>
 
+      <WorkspaceContextPreview workspaceContext={workspaceContext} />
+
       <Card>
         <CardHeader>
           <CardTitle>Vertical Registry</CardTitle>
           <CardDescription>
-            Mock read-only registry — route preview contract (CONSOLE-12)
+            Mock read-only registry — workspace context boundary (CONSOLE-13)
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -236,7 +284,11 @@ export function VerticalRegistryList() {
 
       <div className="grid gap-4">
         {entries.map((entry) => (
-          <VerticalCard key={entry.verticalId} entry={entry} />
+          <VerticalCard
+            key={entry.verticalId}
+            entry={entry}
+            workspaceContext={workspaceContext}
+          />
         ))}
       </div>
     </div>
