@@ -1,5 +1,5 @@
 /**
- * Vertical registry list — CONSOLE-8/11/12/13/14/15/16 mock/read-only UI.
+ * Vertical registry list — CONSOLE-8/11/12/13/14/15/16/18 mock/read-only UI.
  * Server component: listVerticalRegistryEntries (no network).
  */
 
@@ -14,9 +14,12 @@ import {
 import {
   buildVerticalRoutePreview,
   diagnoseVerticalAccess,
+  diagnoseVerticalRegistryAccess,
   filterVerticalRegistryForWorkspace,
   listVerticalRegistryEntries,
+  summarizeVerticalRegistryDiagnostics,
   type VerticalAccessDiagnostic,
+  type VerticalRegistryDiagnosticsSummary,
   type WorkspaceVerticalFilterResult,
 } from "@/lib/verticals";
 import { getMockWorkspaceContext } from "@/lib/workspaces";
@@ -148,6 +151,84 @@ function AccessDiagnosticsPreview({
   );
 }
 
+function RegistryDiagnosticsSummaryPreview({
+  summary,
+}: {
+  summary: VerticalRegistryDiagnosticsSummary;
+}) {
+  const formatRoles = (roles: string[]) =>
+    roles.length > 0 ? roles.join(", ") : "—";
+
+  return (
+    <div className="rounded-md border border-border/60 bg-muted/10 p-3 text-sm">
+      <p className="font-medium text-muted-foreground">
+        Registry diagnostics summary
+      </p>
+      <dl className="mt-2 space-y-1">
+        <FieldRow label="Total verticals" value={String(summary.totalVerticals)} />
+        <FieldRow
+          label="Visible verticals"
+          value={String(summary.visibleVerticals)}
+        />
+        <FieldRow
+          label="Hidden verticals"
+          value={String(summary.hiddenVerticals)}
+        />
+      </dl>
+      <div className="mt-3 space-y-2">
+        <p className="text-xs font-medium text-muted-foreground">By status</p>
+        <dl className="space-y-1">
+          {summary.byStatus.map((item) => (
+            <FieldRow
+              key={item.status}
+              label={item.status}
+              value={String(item.count)}
+            />
+          ))}
+        </dl>
+      </div>
+      <div className="mt-3 space-y-2">
+        <p className="text-xs font-medium text-muted-foreground">By match type</p>
+        <dl className="space-y-1">
+          {summary.byMatchType.map((item) => (
+            <FieldRow
+              key={item.matchType}
+              label={item.matchType}
+              value={String(item.count)}
+            />
+          ))}
+        </dl>
+      </div>
+      <div className="mt-3 space-y-2">
+        <p className="text-xs font-medium text-muted-foreground">Roles</p>
+        <dl className="space-y-1">
+          <FieldRow
+            label="Context roles"
+            value={formatRoles(summary.roles.contextRoles)}
+          />
+          <FieldRow
+            label="Allowed roles"
+            value={formatRoles(summary.roles.allowedRoles)}
+          />
+          <FieldRow
+            label="Matched roles"
+            value={formatRoles(summary.roles.matchedRoles)}
+          />
+          <FieldRow
+            label="Missing roles"
+            value={formatRoles(summary.roles.missingRoles)}
+          />
+        </dl>
+      </div>
+      <dl className="mt-3 space-y-1">
+        <FieldRow label="Mode" value={summary.reason} />
+        <FieldRow label="Mock" value="yes" />
+        <FieldRow label="Read-only" value="yes" />
+      </dl>
+    </div>
+  );
+}
+
 function HiddenVerticalDiagnosticItem({
   entry,
   diagnostic,
@@ -194,17 +275,13 @@ function HiddenVerticalDiagnosticItem({
 }
 
 function HiddenVerticalDiagnosticsPreview({
-  hiddenEntries,
-  workspaceContext,
+  hiddenDiagnostics,
 }: {
-  hiddenEntries: VerticalRegistryEntry[];
-  workspaceContext: WorkspaceContext;
+  hiddenDiagnostics: Array<{
+    entry: VerticalRegistryEntry;
+    diagnostic: VerticalAccessDiagnostic;
+  }>;
 }) {
-  const hiddenDiagnostics = hiddenEntries.map((entry) => ({
-    entry,
-    diagnostic: diagnoseVerticalAccess({ entry, workspaceContext }),
-  }));
-
   return (
     <div className="rounded-md border border-border/60 bg-muted/10 p-3 text-sm">
       <p className="font-medium text-muted-foreground">
@@ -213,13 +290,13 @@ function HiddenVerticalDiagnosticsPreview({
       <dl className="mt-2 space-y-1">
         <FieldRow
           label="Hidden verticals"
-          value={String(hiddenEntries.length)}
+          value={String(hiddenDiagnostics.length)}
         />
         <FieldRow label="Mode" value="workspace_access_diagnostics_mock" />
         <FieldRow label="Mock" value="yes" />
         <FieldRow label="Read-only" value="yes" />
       </dl>
-      {hiddenEntries.length === 0 ? (
+      {hiddenDiagnostics.length === 0 ? (
         <p className="mt-3 text-muted-foreground">
           No hidden verticals for the current mock workspace context.
         </p>
@@ -405,6 +482,23 @@ export function VerticalRegistryList() {
   });
   const visibleEntries = filteredRegistry.visibleEntries;
   const hiddenEntries = filteredRegistry.hiddenEntries;
+  const registryDiagnostics = diagnoseVerticalRegistryAccess(
+    entries,
+    workspaceContext,
+  );
+  const registryDiagnosticsSummary =
+    summarizeVerticalRegistryDiagnostics(registryDiagnostics);
+  const diagnosticByVerticalId = new Map(
+    registryDiagnostics.map((diagnostic) => [
+      diagnostic.verticalId,
+      diagnostic,
+    ]),
+  );
+  const hiddenDiagnostics = hiddenEntries.map((entry) => ({
+    entry,
+    diagnostic: diagnosticByVerticalId.get(entry.verticalId) ??
+      diagnoseVerticalAccess({ entry, workspaceContext }),
+  }));
 
   const mockCount = visibleEntries.filter((e) => e.dataMode === "mock").length;
   const readOnlyCount = visibleEntries.filter((e) => e.safety.readOnly).length;
@@ -430,11 +524,13 @@ export function VerticalRegistryList() {
 
       <WorkspaceFilterPreview filteredRegistry={filteredRegistry} />
 
+      <RegistryDiagnosticsSummaryPreview summary={registryDiagnosticsSummary} />
+
       <Card>
         <CardHeader>
           <CardTitle>Vertical Registry</CardTitle>
           <CardDescription>
-            Mock read-only registry — access diagnostics (CONSOLE-15/16)
+            Mock read-only registry — diagnostics summary (CONSOLE-18)
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -470,19 +566,16 @@ export function VerticalRegistryList() {
               key={entry.verticalId}
               entry={entry}
               workspaceContext={workspaceContext}
-              accessDiagnostic={diagnoseVerticalAccess({
-                entry,
-                workspaceContext,
-              })}
+              accessDiagnostic={
+                diagnosticByVerticalId.get(entry.verticalId) ??
+                diagnoseVerticalAccess({ entry, workspaceContext })
+              }
             />
           ))
         )}
       </div>
 
-      <HiddenVerticalDiagnosticsPreview
-        hiddenEntries={hiddenEntries}
-        workspaceContext={workspaceContext}
-      />
+      <HiddenVerticalDiagnosticsPreview hiddenDiagnostics={hiddenDiagnostics} />
     </div>
   );
 }

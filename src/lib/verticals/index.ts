@@ -48,6 +48,15 @@ export type {
   VerticalAccessMatchType,
 } from "./vertical-registry-access-diagnostics.mock";
 
+export { summarizeVerticalRegistryDiagnostics } from "./vertical-registry-diagnostics-summary.mock";
+
+export type {
+  VerticalRegistryDiagnosticsMatchSummary,
+  VerticalRegistryDiagnosticsRoleSummary,
+  VerticalRegistryDiagnosticsStatusSummary,
+  VerticalRegistryDiagnosticsSummary,
+} from "./vertical-registry-diagnostics-summary.mock";
+
 export type {
   VerticalCapability,
   VerticalCapabilityKey,

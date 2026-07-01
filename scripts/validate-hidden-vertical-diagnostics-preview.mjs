@@ -247,8 +247,13 @@ function validateComponent() {
     }
   }
 
-  if (!hiddenSection.includes("diagnoseVerticalAccess")) {
-    fail("Hidden diagnostics section must use diagnoseVerticalAccess");
+  if (
+    !component.includes("diagnoseVerticalAccess") &&
+    !component.includes("diagnoseVerticalRegistryAccess")
+  ) {
+    fail(
+      "Component must use diagnoseVerticalAccess or diagnoseVerticalRegistryAccess for hidden entries",
+    );
   }
 
   if (hiddenSection.includes("<a")) {
