@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, hasSupabaseServerEnv } from "@/lib/supabase/server";
 import {
   getActiveWorkspace,
   ACTIVE_WORKSPACE_COOKIE,
@@ -14,6 +14,19 @@ import type {
 } from "@/features/inbox/types";
 
 export default async function InboxPage() {
+  if (!hasSupabaseServerEnv()) {
+    return (
+      <div className="flex min-h-[50vh] flex-col items-center justify-center px-8 text-center">
+        <p className="text-sm font-medium text-foreground">
+          Local preview: inbox unavailable without Supabase env
+        </p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Mock vertical registry is available at /verticals (read-only preview).
+        </p>
+      </div>
+    );
+  }
+
   const supabase = await createClient();
 
   // 1. Authenticate

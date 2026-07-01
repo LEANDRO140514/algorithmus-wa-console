@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/components/theme-provider";
 import {
   Sun,
   Moon,

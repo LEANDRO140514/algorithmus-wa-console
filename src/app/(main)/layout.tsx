@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, hasSupabaseServerEnv } from "@/lib/supabase/server";
 import { logout } from "@/features/auth/services/actions";
 import {
   getActiveWorkspace,
@@ -23,6 +23,21 @@ export default async function MainLayout({
 }: {
   children: React.ReactNode;
 }) {
+  if (!hasSupabaseServerEnv()) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <div
+          role="status"
+          className="border-b border-border/50 bg-muted/20 px-4 py-2 text-sm text-muted-foreground"
+        >
+          Local preview: Supabase env not configured. Auth-backed routes are
+          running in read-only preview mode.
+        </div>
+        <div className="flex-1">{children}</div>
+      </div>
+    );
+  }
+
   const supabase = await createClient();
 
   const {
