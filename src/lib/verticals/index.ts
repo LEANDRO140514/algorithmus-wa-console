@@ -34,6 +34,20 @@ export type {
   WorkspaceVerticalFilterResult,
 } from "./vertical-registry-filter.mock";
 
+export {
+  diagnoseVerticalAccess,
+  diagnoseVerticalRegistryAccess,
+  getMatchedWorkspaceRoles,
+  getMissingWorkspaceRoles,
+} from "./vertical-registry-access-diagnostics.mock";
+
+export type {
+  VerticalAccessDiagnostic,
+  VerticalAccessDiagnosticInput,
+  VerticalAccessDiagnosticStatus,
+  VerticalAccessMatchType,
+} from "./vertical-registry-access-diagnostics.mock";
+
 export type {
   VerticalCapability,
   VerticalCapabilityKey,

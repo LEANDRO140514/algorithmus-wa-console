@@ -1,5 +1,5 @@
 /**
- * Vertical registry list — CONSOLE-8/11/12/13/14 mock/read-only UI.
+ * Vertical registry list — CONSOLE-8/11/12/13/14/15 mock/read-only UI.
  * Server component: listVerticalRegistryEntries (no network).
  */
 
@@ -13,8 +13,10 @@ import {
 } from "@/components/ui/card";
 import {
   buildVerticalRoutePreview,
+  diagnoseVerticalAccess,
   filterVerticalRegistryForWorkspace,
   listVerticalRegistryEntries,
+  type VerticalAccessDiagnostic,
   type WorkspaceVerticalFilterResult,
 } from "@/lib/verticals";
 import { getMockWorkspaceContext } from "@/lib/workspaces";
@@ -68,6 +70,10 @@ function WorkspaceFilterPreview({
           value={String(filteredRegistry.hiddenEntries.length)}
         />
         <FieldRow label="Filter mode" value={filteredRegistry.reason} />
+        <FieldRow
+          label="Diagnostics mode"
+          value="workspace_access_diagnostics_mock"
+        />
         <FieldRow label="Mock" value="yes" />
         <FieldRow label="Read-only" value="yes" />
       </dl>
@@ -95,6 +101,48 @@ function WorkspaceContextPreview({
         <FieldRow label="Mode" value={workspaceContext.mode} />
         <FieldRow label="Read-only" value="yes" />
         <FieldRow label="Mock" value="yes" />
+      </dl>
+    </div>
+  );
+}
+
+function AccessDiagnosticsPreview({
+  diagnostic,
+}: {
+  diagnostic: VerticalAccessDiagnostic;
+}) {
+  return (
+    <div className="space-y-2 rounded-md border border-border/60 bg-muted/10 p-3">
+      <p className="text-sm font-medium text-muted-foreground">
+        Access diagnostics
+      </p>
+      <dl className="space-y-1">
+        <FieldRow label="Status" value={diagnostic.status} />
+        <FieldRow label="Match" value={diagnostic.matchType} />
+        <BoolYesNoRow label="Access found" value={diagnostic.accessFound} />
+        <BoolYesNoRow label="Access visible" value={diagnostic.accessVisible} />
+        <BoolYesNoRow
+          label="Roles compatible"
+          value={diagnostic.rolesCompatible}
+        />
+        <FieldRow
+          label="Matched roles"
+          value={
+            diagnostic.matchedRoles.length > 0
+              ? diagnostic.matchedRoles.join(", ")
+              : "—"
+          }
+        />
+        <FieldRow
+          label="Missing roles"
+          value={
+            diagnostic.missingRoles.length > 0
+              ? diagnostic.missingRoles.join(", ")
+              : "—"
+          }
+        />
+        <FieldRow label="Mock" value="yes" />
+        <FieldRow label="Read-only" value="yes" />
       </dl>
     </div>
   );
@@ -162,9 +210,11 @@ function RouteMetadataPreview({
 function VerticalCard({
   entry,
   workspaceContext,
+  accessDiagnostic,
 }: {
   entry: VerticalRegistryEntry;
   workspaceContext: WorkspaceContext;
+  accessDiagnostic: VerticalAccessDiagnostic;
 }) {
   const liveControlsBlocked = entry.capabilities.some(
     (c) => c.key === "live_controls" && !c.enabled,
@@ -233,6 +283,8 @@ function VerticalCard({
           )}
         </div>
 
+        <AccessDiagnosticsPreview diagnostic={accessDiagnostic} />
+
         <RouteMetadataPreview
           entry={entry}
           workspaceContext={workspaceContext}
@@ -291,7 +343,7 @@ export function VerticalRegistryList() {
         <CardHeader>
           <CardTitle>Vertical Registry</CardTitle>
           <CardDescription>
-            Mock read-only registry — workspace-filtered list (CONSOLE-14)
+            Mock read-only registry — access diagnostics (CONSOLE-15)
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -327,6 +379,10 @@ export function VerticalRegistryList() {
               key={entry.verticalId}
               entry={entry}
               workspaceContext={workspaceContext}
+              accessDiagnostic={diagnoseVerticalAccess({
+                entry,
+                workspaceContext,
+              })}
             />
           ))
         )}
