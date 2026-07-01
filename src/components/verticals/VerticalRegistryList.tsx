@@ -1,5 +1,5 @@
 /**
- * Vertical registry list — CONSOLE-8 mock/read-only UI.
+ * Vertical registry list — CONSOLE-8/11 mock/read-only UI.
  * Server component: listVerticalRegistryEntries (no network).
  */
 
@@ -12,7 +12,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { listVerticalRegistryEntries } from "@/lib/verticals";
-import type { VerticalRegistryEntry } from "@/types/verticals/vertical-registry";
+import type {
+  VerticalRegistryEntry,
+  VerticalRouteMetadata,
+} from "@/types/verticals/vertical-registry";
 
 function FieldRow({ label, value }: { label: string; value: string | boolean }) {
   const display =
@@ -21,6 +24,70 @@ function FieldRow({ label, value }: { label: string; value: string | boolean }) 
     <div className="flex justify-between gap-4 border-b border-border/50 py-2 text-sm last:border-0">
       <dt className="text-muted-foreground">{label}</dt>
       <dd className="font-mono text-right">{display}</dd>
+    </div>
+  );
+}
+
+function PathTextRow({ label, path }: { label: string; path?: string }) {
+  return (
+    <div className="flex justify-between gap-4 border-b border-border/50 py-2 text-sm last:border-0">
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className="max-w-[60%] break-all text-right font-mono text-xs">
+        {path ?? "—"}
+      </dd>
+    </div>
+  );
+}
+
+function BoolYesNoRow({ label, value }: { label: string; value: boolean }) {
+  return <FieldRow label={label} value={value ? "yes" : "no"} />;
+}
+
+function RouteMetadataPreview({
+  routeMetadata,
+}: {
+  routeMetadata: VerticalRouteMetadata;
+}) {
+  return (
+    <div className="space-y-2 rounded-md border border-border/60 bg-muted/20 p-3">
+      <p className="text-sm font-medium text-muted-foreground">
+        Route metadata (read-only)
+      </p>
+      <dl className="space-y-1">
+        <FieldRow label="routeMode" value={routeMetadata.routeMode} />
+        <FieldRow label="visibility" value={routeMetadata.visibility} />
+        <PathTextRow
+          label="preview route"
+          path={
+            routeMetadata.previewStatusPanelPath ?? undefined
+          }
+        />
+        <PathTextRow
+          label="workspace route (future)"
+          path={routeMetadata.workspaceStatusPanelPath}
+        />
+        <PathTextRow
+          label="agency route (future)"
+          path={routeMetadata.agencyStatusPanelPath}
+        />
+        <BoolYesNoRow label="tenant-aware" value={routeMetadata.tenantAware} />
+        <BoolYesNoRow
+          label="workspace-aware"
+          value={routeMetadata.workspaceAware}
+        />
+        <BoolYesNoRow label="agency-aware" value={routeMetadata.agencyAware} />
+        <FieldRow
+          label="allowedRoles"
+          value={routeMetadata.allowedRoles.join(", ")}
+        />
+        <FieldRow
+          label="routeSurface"
+          value={routeMetadata.routeSurface.join(", ")}
+        />
+      </dl>
+      <p className="text-xs text-muted-foreground">
+        Future workspace/agency paths are declarative only — not navigable.
+      </p>
     </div>
   );
 }
@@ -93,14 +160,7 @@ function VerticalCard({ entry }: { entry: VerticalRegistryEntry }) {
           )}
         </div>
 
-        <p className="text-sm text-muted-foreground">
-          Preview route:{" "}
-          <code className="font-mono text-xs">
-            {entry.routeMetadata.previewStatusPanelPath ?? entry.statusPanelPath}
-          </code>
-          {" · "}
-          Route mode: {entry.routeMetadata.routeMode}
-        </p>
+        <RouteMetadataPreview routeMetadata={entry.routeMetadata} />
 
         <p className="text-sm">
           <span className="text-muted-foreground">statusPanelPath: </span>
@@ -145,7 +205,7 @@ export function VerticalRegistryList() {
         <CardHeader>
           <CardTitle>Vertical Registry</CardTitle>
           <CardDescription>
-            Mock read-only registry from CONSOLE-7
+            Mock read-only registry — route metadata preview (CONSOLE-11)
           </CardDescription>
         </CardHeader>
         <CardContent>
