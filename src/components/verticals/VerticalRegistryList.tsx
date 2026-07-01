@@ -1,5 +1,5 @@
 /**
- * Vertical registry list — CONSOLE-8/11/12/13/14/15 mock/read-only UI.
+ * Vertical registry list — CONSOLE-8/11/12/13/14/15/16 mock/read-only UI.
  * Server component: listVerticalRegistryEntries (no network).
  */
 
@@ -144,6 +144,96 @@ function AccessDiagnosticsPreview({
         <FieldRow label="Mock" value="yes" />
         <FieldRow label="Read-only" value="yes" />
       </dl>
+    </div>
+  );
+}
+
+function HiddenVerticalDiagnosticItem({
+  entry,
+  diagnostic,
+}: {
+  entry: VerticalRegistryEntry;
+  diagnostic: VerticalAccessDiagnostic;
+}) {
+  return (
+    <div className="space-y-2 rounded-md border border-dashed border-border/60 bg-muted/5 p-3">
+      <p className="text-sm font-medium text-muted-foreground">
+        {entry.displayName}
+      </p>
+      <dl className="space-y-1">
+        <FieldRow label="Vertical" value={entry.displayName || entry.verticalId} />
+        <FieldRow label="Status" value={diagnostic.status} />
+        <FieldRow label="Match" value={diagnostic.matchType} />
+        <BoolYesNoRow label="Access found" value={diagnostic.accessFound} />
+        <BoolYesNoRow label="Access visible" value={diagnostic.accessVisible} />
+        <BoolYesNoRow
+          label="Roles compatible"
+          value={diagnostic.rolesCompatible}
+        />
+        <FieldRow
+          label="Matched roles"
+          value={
+            diagnostic.matchedRoles.length > 0
+              ? diagnostic.matchedRoles.join(", ")
+              : "—"
+          }
+        />
+        <FieldRow
+          label="Missing roles"
+          value={
+            diagnostic.missingRoles.length > 0
+              ? diagnostic.missingRoles.join(", ")
+              : "—"
+          }
+        />
+        <FieldRow label="Mock" value="yes" />
+        <FieldRow label="Read-only" value="yes" />
+      </dl>
+    </div>
+  );
+}
+
+function HiddenVerticalDiagnosticsPreview({
+  hiddenEntries,
+  workspaceContext,
+}: {
+  hiddenEntries: VerticalRegistryEntry[];
+  workspaceContext: WorkspaceContext;
+}) {
+  const hiddenDiagnostics = hiddenEntries.map((entry) => ({
+    entry,
+    diagnostic: diagnoseVerticalAccess({ entry, workspaceContext }),
+  }));
+
+  return (
+    <div className="rounded-md border border-border/60 bg-muted/10 p-3 text-sm">
+      <p className="font-medium text-muted-foreground">
+        Hidden vertical diagnostics preview
+      </p>
+      <dl className="mt-2 space-y-1">
+        <FieldRow
+          label="Hidden verticals"
+          value={String(hiddenEntries.length)}
+        />
+        <FieldRow label="Mode" value="workspace_access_diagnostics_mock" />
+        <FieldRow label="Mock" value="yes" />
+        <FieldRow label="Read-only" value="yes" />
+      </dl>
+      {hiddenEntries.length === 0 ? (
+        <p className="mt-3 text-muted-foreground">
+          No hidden verticals for the current mock workspace context.
+        </p>
+      ) : (
+        <div className="mt-4 space-y-3">
+          {hiddenDiagnostics.map(({ entry, diagnostic }) => (
+            <HiddenVerticalDiagnosticItem
+              key={entry.verticalId}
+              entry={entry}
+              diagnostic={diagnostic}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -314,6 +404,7 @@ export function VerticalRegistryList() {
     workspaceContext,
   });
   const visibleEntries = filteredRegistry.visibleEntries;
+  const hiddenEntries = filteredRegistry.hiddenEntries;
 
   const mockCount = visibleEntries.filter((e) => e.dataMode === "mock").length;
   const readOnlyCount = visibleEntries.filter((e) => e.safety.readOnly).length;
@@ -343,7 +434,7 @@ export function VerticalRegistryList() {
         <CardHeader>
           <CardTitle>Vertical Registry</CardTitle>
           <CardDescription>
-            Mock read-only registry — access diagnostics (CONSOLE-15)
+            Mock read-only registry — access diagnostics (CONSOLE-15/16)
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -387,6 +478,11 @@ export function VerticalRegistryList() {
           ))
         )}
       </div>
+
+      <HiddenVerticalDiagnosticsPreview
+        hiddenEntries={hiddenEntries}
+        workspaceContext={workspaceContext}
+      />
     </div>
   );
 }
