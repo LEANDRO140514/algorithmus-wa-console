@@ -1,8 +1,9 @@
 /**
- * CONSOLE-5 / CONSOLE-6 — Eva WA status demo route (mock read-only).
+ * CONSOLE-5 / CONSOLE-6 / CONSOLE-20 — Eva WA status demo route (mock read-only).
  * Not linked in global navigation. No auth/middleware changes in CONSOLE-6.
  */
 
+import { EvaConnectorBoundaryPreview } from "@/components/eva/EvaConnectorBoundaryPreview";
 import { EvaStatusPanel } from "@/components/verticals/eva";
 
 export const metadata = {
@@ -36,6 +37,8 @@ export default function EvaStatusMockPage() {
       </aside>
 
       <EvaStatusPanel />
+
+      <EvaConnectorBoundaryPreview />
     </main>
   );
 }
