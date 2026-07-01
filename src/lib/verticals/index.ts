@@ -22,6 +22,18 @@ export type {
   VerticalRoutePreviewResult,
 } from "./vertical-route-preview";
 
+export {
+  filterVerticalRegistryForWorkspace,
+  findVerticalAccess,
+  hasAnyWorkspaceRole,
+  isVerticalVisibleForWorkspace,
+} from "./vertical-registry-filter.mock";
+
+export type {
+  WorkspaceVerticalFilterInput,
+  WorkspaceVerticalFilterResult,
+} from "./vertical-registry-filter.mock";
+
 export type {
   VerticalCapability,
   VerticalCapabilityKey,

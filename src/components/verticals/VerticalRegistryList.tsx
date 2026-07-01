@@ -1,5 +1,5 @@
 /**
- * Vertical registry list — CONSOLE-8/11/12/13 mock/read-only UI.
+ * Vertical registry list — CONSOLE-8/11/12/13/14 mock/read-only UI.
  * Server component: listVerticalRegistryEntries (no network).
  */
 
@@ -13,7 +13,9 @@ import {
 } from "@/components/ui/card";
 import {
   buildVerticalRoutePreview,
+  filterVerticalRegistryForWorkspace,
   listVerticalRegistryEntries,
+  type WorkspaceVerticalFilterResult,
 } from "@/lib/verticals";
 import { getMockWorkspaceContext } from "@/lib/workspaces";
 import type { WorkspaceContext } from "@/types/workspaces/workspace-context";
@@ -46,6 +48,31 @@ function PathTextRow({ label, path }: { label: string; path?: string }) {
 
 function BoolYesNoRow({ label, value }: { label: string; value: boolean }) {
   return <FieldRow label={label} value={value ? "yes" : "no"} />;
+}
+
+function WorkspaceFilterPreview({
+  filteredRegistry,
+}: {
+  filteredRegistry: WorkspaceVerticalFilterResult;
+}) {
+  return (
+    <div className="rounded-md border border-border/60 bg-muted/10 p-3 text-sm">
+      <p className="font-medium text-muted-foreground">Workspace filter preview</p>
+      <dl className="mt-2 space-y-1">
+        <FieldRow
+          label="Visible verticals"
+          value={String(filteredRegistry.visibleEntries.length)}
+        />
+        <FieldRow
+          label="Hidden verticals"
+          value={String(filteredRegistry.hiddenEntries.length)}
+        />
+        <FieldRow label="Filter mode" value={filteredRegistry.reason} />
+        <FieldRow label="Mock" value="yes" />
+        <FieldRow label="Read-only" value="yes" />
+      </dl>
+    </div>
+  );
 }
 
 function WorkspaceContextPreview({
@@ -230,10 +257,15 @@ function VerticalCard({
 export function VerticalRegistryList() {
   const entries = listVerticalRegistryEntries();
   const workspaceContext = getMockWorkspaceContext();
+  const filteredRegistry = filterVerticalRegistryForWorkspace({
+    entries,
+    workspaceContext,
+  });
+  const visibleEntries = filteredRegistry.visibleEntries;
 
-  const mockCount = entries.filter((e) => e.dataMode === "mock").length;
-  const readOnlyCount = entries.filter((e) => e.safety.readOnly).length;
-  const liveBlockedCount = entries.filter(
+  const mockCount = visibleEntries.filter((e) => e.dataMode === "mock").length;
+  const readOnlyCount = visibleEntries.filter((e) => e.safety.readOnly).length;
+  const liveBlockedCount = visibleEntries.filter(
     (e) => !e.safety.canActivateLive,
   ).length;
 
@@ -253,18 +285,20 @@ export function VerticalRegistryList() {
 
       <WorkspaceContextPreview workspaceContext={workspaceContext} />
 
+      <WorkspaceFilterPreview filteredRegistry={filteredRegistry} />
+
       <Card>
         <CardHeader>
           <CardTitle>Vertical Registry</CardTitle>
           <CardDescription>
-            Mock read-only registry — workspace context boundary (CONSOLE-13)
+            Mock read-only registry — workspace-filtered list (CONSOLE-14)
           </CardDescription>
         </CardHeader>
         <CardContent>
           <dl className="grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-4">
             <div>
               <dt className="text-muted-foreground">Verticales</dt>
-              <dd className="text-2xl font-semibold">{entries.length}</dd>
+              <dd className="text-2xl font-semibold">{visibleEntries.length}</dd>
             </div>
             <div>
               <dt className="text-muted-foreground">Mock</dt>
@@ -283,13 +317,19 @@ export function VerticalRegistryList() {
       </Card>
 
       <div className="grid gap-4">
-        {entries.map((entry) => (
-          <VerticalCard
-            key={entry.verticalId}
-            entry={entry}
-            workspaceContext={workspaceContext}
-          />
-        ))}
+        {visibleEntries.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No verticals visible for the current mock workspace context.
+          </p>
+        ) : (
+          visibleEntries.map((entry) => (
+            <VerticalCard
+              key={entry.verticalId}
+              entry={entry}
+              workspaceContext={workspaceContext}
+            />
+          ))
+        )}
       </div>
     </div>
   );
